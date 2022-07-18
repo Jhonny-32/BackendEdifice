@@ -1,12 +1,12 @@
-const Residential = require('../models/residential');
+const Residential = require('../models/residentialS');
 
 module.exports = {
 
-    async registerResidential(req, res, next){
+    async register(req, res, next){
         try {
             
-            const residential = req.body;
-            const data = await Residential.registerResidential();
+            const dataR = req.body;
+            const data = await Residential.createResidential(dataR);
             return res.status(201).json({
                 success: true,
                 message: `Se realizo correctamente el registro`

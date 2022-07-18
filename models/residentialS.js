@@ -2,13 +2,13 @@ const db = require('../config/config');
 
 const Residential = {}
 
-Residential.registerResidential = (residential) =>{
+Residential.createResidential = (dataR) =>{
     
     const sql = `
         INSERT INTO 
             residential(
                 name,
-                nit,
+                nit,    
                 address, 
                 lat,
                 lng,
@@ -19,11 +19,11 @@ Residential.registerResidential = (residential) =>{
 
     `
     return db.oneOrNone(sql, [
-        residential.name,
-        residential.nit,
-        residential.address,
-        residential.lat,
-        residential.lng,
+        dataR.name,
+        dataR.nit,
+        dataR.address,
+        dataR.lat,
+        dataR.lng,
         new Date(),
         new Date()
     ]);

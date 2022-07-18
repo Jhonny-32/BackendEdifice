@@ -13,9 +13,9 @@ types.setTypeParser(1114, function(stringValues){
 const databaseconfig = {
     'host' : '127.0.0.1',
     'port' : 5432,
-    'database' : '',
-    'user' : 'postgress',
-    'password' : ''
+    'database' : 'EdificeJP',
+    'user' : 'postgres',
+    'password' : 'angeles-32'
 }
 
 const db = pgp(databaseconfig);
