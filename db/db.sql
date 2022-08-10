@@ -22,8 +22,10 @@ CREATE TABLE users (
     email VARCHAR(255) not null,
     image VARCHAR(255) null,
     dni VARCHAR(80) UNIQUE,
+    password VARCHAR(255) NOT NULL,
 	created_at TIMESTAMP(0) NOT NULL,
-    updated_at TIMESTAMP(0) NOT NULL
+    updated_at TIMESTAMP(0) NOT NULL,
+    session_token VARCHAR (255) NULL
 );
 
 DROP TABLE IF EXISTS residential_has_user CASCADE;

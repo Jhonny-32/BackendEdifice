@@ -9,7 +9,10 @@ module.exports = {
             const data = await Residential.createResidential(dataR);
             return res.status(201).json({
                 success: true,
-                message: `Se realizo correctamente el registro`
+                message: `Se realizo correctamente el registro`,
+                data: {
+                    'id' : data.id
+                }
             });
 
 
