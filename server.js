@@ -6,9 +6,20 @@ const server = http.createServer(app);
 const logger = require('morgan')
 const cors = require('cors');
 const passport = require('passport');
+const multer = require('multer');
+const serviceAccountKey = require('./serviceAccountKey.json');
+const admin = require('firebase-admin')
+
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccountKey)
+});
+
+const upload = multer({
+    storage: multer.memoryStorage()
+})
 
 /*
-    RUTAS
+*    RUTAS
 */
 
 const residential = require('./routes/residentialRoutes')
@@ -45,9 +56,9 @@ app.set('port', port);
 */
 
 residential(app);
-user(app);
+user(app, upload);
 
-server.listen(3000, '192.168.0.2' || 'localhost', function(){
+server.listen(3000, '192.168.0.8' || 'localhost', function(){
     console.log('Estamos en el puerto ', port);
 });
 

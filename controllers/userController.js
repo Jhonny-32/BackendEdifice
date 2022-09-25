@@ -1,8 +1,10 @@
 const User = require('../models/user');
+const Rol = require('../models/rol'); 
 const bcrypt = require('bcryptjs');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const keys = require('../config/keys');
+const storage = require('../utils/cloud_storage')
 
 
 module.exports = {
@@ -12,12 +14,28 @@ module.exports = {
             
             const user = req.body; 
             const data = await User.register(user);
+
+            await Rol.create(1 , data.id)
+
+            const token = jwt.sign({ id: data.id, email: user.email }, keys.secretOrKey, {
+                    
+                })
+
+                const mydata = {
+                    id: data.id,
+                    name: user.name,
+                    lastname: user.lastname,
+                    phone: user.phone,
+                    email: user.email,
+                    dni: user.dni,
+                    password: user.password,
+                    session_token: `JWT ${token}`
+                };
+
             return res.status(201).json({
                 success: true,
                 message: `Se realizo correctamente el registro`,
-                data: {
-                    'id': data.id
-                }
+                data: mydata
             })
 
         } catch (error) {
@@ -56,12 +74,16 @@ module.exports = {
                     id: myUser.id,
                     name: myUser.name,
                     lastname: myUser.lastname,
-                    phone: myUser.User,
+                    phone: myUser.phone,
                     email: myUser.email,
                     dni: myUser.dni,
                     password: myUser.password,
-                    session_token: `JWT ${token}`
+                    session_token: `JWT ${token}`,
+                    roles: myUser.roles
                 };
+
+                 await User.updateSessionToken(myUser.id, `JWT ${token}`);
+                console.log(data);
 
                 return res.status(201).json({
                     success: true, 
@@ -85,6 +107,69 @@ module.exports = {
                 error: error
             })
         }
+    },
+
+    async update(req, res, next) {
+    try {
+      console.log('Usuario', req.body.user);
+
+      const user = JSON.parse(req.body.user);
+      console.log('Usuario parseado', user);
+
+      const files = req.files;
+
+      if (files.length > 0) {
+        //EL CLIENTE ENVIA UN ARCHIVO
+
+        const pathImage = `image_${Date.now()}`; //NOMBRE DEL ARCHIVO DE LA IMAGEN
+        const url = await storage(files[0], pathImage);
+
+        if (url != undefined && url != null) {
+          user.image = url;
+        }
+      }
+
+      await User.update(user); //GUARDANDO LA URL EN LA BASE DE DATOS
+
+      return res.status(201).json({
+        success: true,
+        message: 'Los datos del usuario se han actualizado correctamente',
+        data: user,
+      });
+    } catch (error) {
+      console.log(`Error: ${error}`);
+      return res.status(501).json({
+        success: false,
+        message: 'Error al actualizar los datos',
+        error: error,
+      });
     }
+  },
+
+  
+    async updateWithOutImage(req, res, next) {
+    try {
+      console.log('Usuario', req.body);
+
+      const user = req.body;
+      console.log('Usuario parseado', user);
+
+      await User.update(user); //GUARDANDO LA URL EN LA BASE DE DATOS
+
+      return res.status(201).json({
+        success: true,
+        message: 'Los datos del usuario se han actualizado correctamente',
+        data: user,
+      });
+    } catch (error) {
+      console.log(`Error: ${error}`);
+      return res.status(501).json({
+        success: false,
+        message: 'Error al actualizar los datos',
+        error: error,
+      });
+    }
+  },
+  
 
 }
