@@ -4,6 +4,8 @@ const passport = require('passport')
 module.exports = (app, upload) => {
 
     app.post('/api/user/create', UserController.create);
+
+    app.post('/api/user/getDataResident',passport.authenticate('jwt', {session: false}),UserController.getDataResident);
     
     app.post('/api/user/login', UserController.login);
 
@@ -11,3 +13,6 @@ module.exports = (app, upload) => {
     app.put('/api/users/updateWithOut',passport.authenticate('jwt', {session: false}), UserController.updateWithOutImage);
 
 }
+
+//Sirve para seguridad de los usuarios con su respectivo token
+//passport.authenticate('jwt', {session: false})

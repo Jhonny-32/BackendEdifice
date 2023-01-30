@@ -30,4 +30,24 @@ Residential.createResidential = (dataR) =>{
 
 }
 
+
+Residential.register = ( id_residential, id_user) => {
+    const sql = `
+        INSERT INTO 
+            residential_has_user(
+                idresidential,
+                iduser,
+                created_at,
+                updated_at
+            )
+        VALUES($1,$2,$3,$4);
+    `
+    return db.none(sql, [
+        id_residential,
+        id_user,
+        new Date(),
+        new Date()
+    ])
+}
+
 module.exports = Residential;

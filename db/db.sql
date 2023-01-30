@@ -76,6 +76,7 @@ CREATE TABLE orders (
     image3 VARCHAR(255) NULL,
     descriptions VARCHAR(255) NULL,
     statuss VARCHAR(80) NOT NULL,
+    timestamp BIGINT NOT NULL,
     created_at TIMESTAMP(0) NOT NULL,
     updated_at TIMESTAMP(0) NOT NULL,
 	FOREIGN KEY(idSets) REFERENCES sets(id) ON UPDATE CASCADE ON DELETE CASCADE,

@@ -2,7 +2,7 @@ const db = require('../config/config')
 
 const Rol = {};
 
-Rol.create = (id_user, id_rol) => {
+Rol.create = (id_rol, id_user) => {
     const sql = `
         INSERT INTO 
             user_has_roles(
@@ -14,8 +14,8 @@ Rol.create = (id_user, id_rol) => {
         VALUES($1,$2,$3,$4);
     `
     return db.none(sql, [
-        id_user,
         id_rol,
+        id_user,
         new Date(),
         new Date()
     ])

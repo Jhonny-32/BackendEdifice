@@ -50,6 +50,7 @@ User.findByEmail = (email) => {
             U.dni,
             U.password,
             U.session_token,
+            RES.name AS conjunto,
             json_agg(
                 json_build_object(
                     'id', R.id,
@@ -67,10 +68,17 @@ User.findByEmail = (email) => {
             roles AS R
         ON 
             R.id = UHR.idroles
-
+        INNER JOIN  
+            residential_has_user AS RHU
+        ON 
+            RHU.iduser = U.id
+        INNER JOIN
+            residential AS RES 
+        ON
+            RES.id = RHU.idresidential
         WHERE 
             email = $1
-        GROUP BY U.id`;
+        GROUP BY U.id, RES.name;`;
 
     return db.oneOrNone(sql, email)
 }
@@ -127,6 +135,35 @@ User.updateSessionToken = (id_user, session_token) => {
   `;
   return db.none(sql, [id_user, session_token]);
 };
+
+User.dataResident = (conjunto) => {
+    
+    const sql = `
+         SELECT 
+	        U.name,
+	        U.lastname,
+	        U.phone,
+	        s.tower,
+	        s.apartament
+        FROM residential as RES
+	    INNER JOIN residential_has_user as RHU
+	    ON 
+		    RES.id = RHU.idresidential 
+	    INNER JOIN users as U 
+	    ON 
+		    RHU.iduser = U.id
+	    INNER JOIN user_has_sets as uhs 
+	    ON 
+		    uhs.iduser = u.id
+	    INNER JOIN sets as s 
+	    ON
+		    s.id = uhs.idsets
+        WHERE RES.name = $1
+    `;
+
+    return db.manyOrNone(sql, conjunto);
+
+}
 
 
 module.exports = User;

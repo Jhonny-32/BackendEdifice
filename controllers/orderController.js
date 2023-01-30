@@ -1,0 +1,163 @@
+const Orders = require('../models/orders');
+const storage = require('../utils/cloud_storage');
+const asyncForEach = require('../utils/async_foreach');
+
+module.exports = {
+
+  
+    async findByStatus(req, res, next) {
+      try {
+        const statuss = req.params.statuss;
+        const conjunto = req.params.conjunto;
+        const data = await Orders.findByStatus(statuss, conjunto);
+        console.log(`Status ${JSON.stringify(data)}`);
+        return res.status(201).json(data);
+      } catch (error) {
+        console.log(`Error: ${error}`);
+        return res.status(501).json({
+          success: false,
+          message: 'Error al obtener las ordenes por estado.',
+        });
+      }
+    },
+
+    
+    async findByClientAndStatus(req, res, next) {
+      try {
+        const statuss = req.params.statuss;
+        const conjunto = req.params.conjunto;
+        const idClient = req.params.idClient;
+        const data = await Orders.findByClientAndStatus(statuss, conjunto, idClient);
+        return res.status(201).json(data);
+      } catch (error) {
+        console.log(`Error: ${error}`);
+        return res.status(501).json({
+          success: false,
+          message: 'Error al obtener las ordenes por estado.',
+        });
+      }
+    },
+
+    
+    async createOrder(req, res, next) {
+    let order = JSON.parse(req.body.order);
+
+    const files = req.files;
+
+    let inserts = 0;
+
+    if (files.length === 0) {
+      return res.status(501).json({
+        message: 'Error al registrar el producto no tiene imagen',
+        success: false,
+      });
+    } else {
+      try {
+        const data = await Orders.insert(order); // ALMACENANDO LA INFORMACION
+        order.id = data.id;
+
+        const start = async () => {
+          await asyncForEach(files, async (file) => {
+            const pathImage = `image_${Date.now()}`;
+            const url = await storage(file, pathImage);
+
+            if (url !== undefined && url !== null) {
+              if (inserts == 0) {
+                // IMAGEN 1
+                order.image1 = url;
+              } else if (inserts == 1) {
+                // IMAGEN 2
+                order.image2 = url;
+              } else if (inserts == 2) {
+                // IMAGEN 3
+                order.image3 = url;
+              }
+            }
+
+            await Orders.update(order);
+            inserts = inserts + 1;
+
+            if (inserts == files.length) {
+              return res.status(201).json({
+                success: true,
+                message: 'El producto se ha registrado correctamente',
+              });
+            }
+          });
+        };
+
+        start();
+      } catch (error) {
+        console.log(`Error: ${error}`);
+        return res.status(501).json({
+          message: `Error al registrar el producto ${error}`,
+          success: false,
+          error: error,
+        });
+      }
+    }
+  }
+    /*
+    async createOrder(req, res, next){
+
+        const order = JSON.parse(req.body.order);
+        const files = req.files;
+
+        let inserts = 0;
+
+        if(files.lenght == 0){
+            return res.status(501).json({
+                message: 'Error al registrar un pedido no tiene imagen',
+                success: false
+            });
+        } 
+        else{
+            try {
+                
+                const data = await Orders.insert(order);
+                order.id = data.id;
+
+                const start = async () =>{
+                    await asyncForEach(files, async (file)=>{
+                        const pathImage = `image_${Date.now()}`;
+                        const url = await storage(file, pathImage);
+
+                        if(url !== undefined && url !== null){
+                            if(inserts==0){
+                                order.image1 = url;
+                            }
+                            else if(inserts ==1){
+                                order.image2 =url
+                            }
+                            else if(inserts ==2){
+                                order.image3 =url
+                            }
+                        } 
+
+                        await Orders.update(order);
+                        inserts = inserts +1;
+
+                        if(inserts == files.lenght){
+                            return res.status(201).json({
+                                success: true,
+                                message: 'El pedido se ha registrado correctamente'
+                            })
+                        }
+
+                    })
+                }
+
+                start();
+
+            } catch (error) {
+                console.log(`Error: ${error}`);
+                return res.status(501).json({
+                message: `Error al registrar un pedido ${error}` ,
+                success: false,
+                error: error
+            });
+            }
+        }
+
+  }*/
+}

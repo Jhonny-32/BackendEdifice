@@ -24,6 +24,8 @@ const upload = multer({
 
 const residential = require('./routes/residentialRoutes')
 const user = require('./routes/userRoutes')
+const orders = require('./routes/orderRoutes');
+const sets = require('./routes/setRoutes')
 
 const port = process.env.PORT || 3000;
 
@@ -57,8 +59,10 @@ app.set('port', port);
 
 residential(app);
 user(app, upload);
+orders(app, upload);
+sets(app);
 
-server.listen(3000, '192.168.0.8' || 'localhost', function(){
+server.listen(3000, '192.168.0.9' || 'localhost', function(){
     console.log('Estamos en el puerto ', port);
 });
 

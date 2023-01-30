@@ -15,7 +15,7 @@ module.exports = {
             const user = req.body; 
             const data = await User.register(user);
 
-            await Rol.create(1 , data.id)
+            await Rol.create(1,data.id)//Asigancion del rol por ID 
 
             const token = jwt.sign({ id: data.id, email: user.email }, keys.secretOrKey, {
                     
@@ -28,7 +28,6 @@ module.exports = {
                     phone: user.phone,
                     email: user.email,
                     dni: user.dni,
-                    password: user.password,
                     session_token: `JWT ${token}`
                 };
 
@@ -75,10 +74,12 @@ module.exports = {
                     name: myUser.name,
                     lastname: myUser.lastname,
                     phone: myUser.phone,
+                    image: myUser.image,
                     email: myUser.email,
                     dni: myUser.dni,
                     password: myUser.password,
                     session_token: `JWT ${token}`,
+                    conjunto: myUser.conjunto,
                     roles: myUser.roles
                 };
 
@@ -92,7 +93,7 @@ module.exports = {
                 })
             }
             else{
-                 return res.status(201).json({
+                 return res.status(401).json({
                     success: false, 
                     message: 'La contraseña es incorrecta',
                 })
@@ -170,6 +171,23 @@ module.exports = {
       });
     }
   },
-  
+
+   async getDataResident(req, res, next){
+      try {
+        
+        const conjunto = req.body.conjunto;
+        const data = await User.dataResident(conjunto);
+
+        return res.status(201).json(data)
+      
+      } catch (error) {
+        console.log(`Error: ${error}`);
+        return res.status(501).json({
+        success: false,
+        message: 'Error al encontrar la informacion',
+        error: error,
+        });
+      }
+   }
 
 }
