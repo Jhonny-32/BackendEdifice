@@ -1,6 +1,7 @@
 const Orders = require('../models/orders');
 const storage = require('../utils/cloud_storage');
 const asyncForEach = require('../utils/async_foreach');
+const relativeTime = require('../utils/time_relative');
 
 module.exports = {
 
@@ -9,8 +10,12 @@ module.exports = {
       try {
         const statuss = req.params.statuss;
         const conjunto = req.params.conjunto;
-        const data = await Orders.findByStatus(statuss, conjunto);
-        console.log(`Status ${JSON.stringify(data)}`);
+        let data = await Orders.findByStatus(statuss, conjunto);
+        
+        data.forEach(d => {
+          d.timestamp = relativeTime(new Date().getTime(), d.timestamp);
+        });
+        
         return res.status(201).json(data);
       } catch (error) {
         console.log(`Error: ${error}`);
@@ -27,7 +32,12 @@ module.exports = {
         const statuss = req.params.statuss;
         const conjunto = req.params.conjunto;
         const idClient = req.params.idClient;
-        const data = await Orders.findByClientAndStatus(statuss, conjunto, idClient);
+        let data = await Orders.findByClientAndStatus(statuss, conjunto, idClient);
+        
+        data.forEach(d => {
+          d.timestamp = relativeTime(new Date().getTime(), d.timestamp);
+        });
+
         return res.status(201).json(data);
       } catch (error) {
         console.log(`Error: ${error}`);
