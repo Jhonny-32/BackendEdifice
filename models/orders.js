@@ -169,4 +169,36 @@ Orders.update = (order) =>{
     ])
 }
 
+Orders.updateOrder = (order) => {
+
+ const sql = `
+    UPDATE
+        orders
+    SET
+        idsets = $2,
+        iduser = $3,
+        image1 = $4,
+        image2 = $5,
+        image3 = $6,
+        descriptions = $7,
+        statuss = $8,
+        updated_at = $9
+    WHERE
+        id = $1
+ `;
+
+ return db.none(sql, [
+    order.id,
+    order.idsets,
+    order.iduser,
+    order.image1,
+    order.image2,
+    order.image3,
+    order.descriptions,
+    order.statuss,
+    new Date()
+ ]);
+
+}
+
 module.exports = Orders;

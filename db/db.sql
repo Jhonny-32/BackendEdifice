@@ -85,6 +85,7 @@ CREATE TABLE orders (
 
 DROP TABLE IF EXISTS user_has_sets CASCADE;
 CREATE TABLE user_has_sets(
+    id BIGSERIAL PRIMARY KEY,
 	idUser BIGSERIAL NOT NULL,
     idSets BIGSERIAL NOT NULL,
 	created_at TIMESTAMP(0) NOT NULL,

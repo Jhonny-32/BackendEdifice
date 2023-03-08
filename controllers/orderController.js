@@ -106,68 +106,26 @@ module.exports = {
         });
       }
     }
-  }
-    /*
-    async createOrder(req, res, next){
+  },
 
-        const order = JSON.parse(req.body.order);
-        const files = req.files;
+  async updateOrder(req, res, next) {
+    try {
+      let order = req.body;
+      order.statuss = 'ENTREGADO';
+      await Orders.updateOrder(order);
 
-        let inserts = 0;
+      return res.status(201).json({
+        success: true,
+        message: 'La orden se actualizo correctamente',
+      });
+    } catch (error) {
+      console.log(`Error ${error}`);
+      return res.status(501).json({
+        success: false,
+        message: 'Hubo un error creando la orden',
+        error: error,
+      });
+    }
+  },
 
-        if(files.lenght == 0){
-            return res.status(501).json({
-                message: 'Error al registrar un pedido no tiene imagen',
-                success: false
-            });
-        } 
-        else{
-            try {
-                
-                const data = await Orders.insert(order);
-                order.id = data.id;
-
-                const start = async () =>{
-                    await asyncForEach(files, async (file)=>{
-                        const pathImage = `image_${Date.now()}`;
-                        const url = await storage(file, pathImage);
-
-                        if(url !== undefined && url !== null){
-                            if(inserts==0){
-                                order.image1 = url;
-                            }
-                            else if(inserts ==1){
-                                order.image2 =url
-                            }
-                            else if(inserts ==2){
-                                order.image3 =url
-                            }
-                        } 
-
-                        await Orders.update(order);
-                        inserts = inserts +1;
-
-                        if(inserts == files.lenght){
-                            return res.status(201).json({
-                                success: true,
-                                message: 'El pedido se ha registrado correctamente'
-                            })
-                        }
-
-                    })
-                }
-
-                start();
-
-            } catch (error) {
-                console.log(`Error: ${error}`);
-                return res.status(501).json({
-                message: `Error al registrar un pedido ${error}` ,
-                success: false,
-                error: error
-            });
-            }
-        }
-
-  }*/
 }

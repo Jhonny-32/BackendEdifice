@@ -38,4 +38,43 @@ Sets.getData = (conjunto) => {
 
 }
 
+Sets.create = (set) =>{
+	const sql = `
+		INSERT INTO 
+			sets(
+				tower,
+				apartament,
+				created_at,
+				updated_at
+			)
+		VALUES($1, $2, $3, $4) RETURNING id
+	`;
+	return db.oneOrNone(sql, [
+		set.tower,
+		set.apartament,
+		new Date(),
+		new Date()
+	])
+}
+
+Sets.userHasSets = (uhs) =>{
+	const sql = `
+		INSERT INTO 
+			user_has_sets(
+				iduser,
+				idsets,
+				created_at,
+				updated_at
+			)
+		VALUES($1, $2, $3, $4)
+	`;
+
+	return db.oneOrNone(sql, [
+		uhs.iduser,
+		uhs.idsets,
+		new Date(),
+		new Date()
+	])
+}
+
 module.exports = Sets

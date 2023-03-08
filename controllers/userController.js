@@ -5,6 +5,7 @@ const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const keys = require('../config/keys');
 const storage = require('../utils/cloud_storage')
+const Residential = require('../models/residentialS')
 
 
 module.exports = {
@@ -46,6 +47,99 @@ module.exports = {
             })
         }
     },
+
+    async createSecurity(req, res, next){
+        try {
+            /*
+              | id |   rol          |
+              | 1  |  ADMINISTRADOR |
+              | 2  | PROPIETARIO    |
+              | 3  | VIGILANTE      |
+              | 4  | MANAGER        | 
+            */
+            const idResidential = req.body.residential;
+            const user = req.body; 
+            const data = await User.register(user);
+
+            await Rol.create(3,data.id)//Asigancion del rol por ID 
+            await Residential.register(idResidential, data.id)
+
+            const token = jwt.sign({ id: data.id, email: user.email }, keys.secretOrKey, {
+                    
+                })
+
+                const mydata = {
+                    id: data.id,
+                    name: user.name,
+                    lastname: user.lastname,
+                    phone: user.phone,
+                    email: user.email,
+                    dni: user.dni,
+                    session_token: `JWT ${token}`
+                };
+
+            return res.status(201).json({
+                success: true,
+                message: `Se realizo correctamente el registro`,
+                data: mydata
+            })
+
+        } catch (error) {
+            console.log(`Error: ${error}`);
+            return res.status(501).json({
+                success: false, 
+                message: `Error con el registro`,
+                error: error
+            })
+        }
+    },
+
+    async createOwner(req, res, next){
+        try {
+            /*
+              | id |   rol          |
+              | 1  |  ADMINISTRADOR |
+              | 2  | PROPIETARIO    |
+              | 3  | VIGILANTE      |
+              | 4  | MANAGER        | 
+            */
+            const idResidential = req.body.residential;
+            const user = req.body; 
+            const data = await User.register(user);
+
+            await Rol.create(2,data.id)//Asigancion del rol por ID 
+            await Residential.register(idResidential, data.id)
+
+            const token = jwt.sign({ id: data.id, email: user.email }, keys.secretOrKey, {
+                    
+                })
+
+                const mydata = {
+                    id: data.id,
+                    name: user.name,
+                    lastname: user.lastname,
+                    phone: user.phone,
+                    email: user.email,
+                    dni: user.dni,
+                    session_token: `JWT ${token}`
+                };
+
+            return res.status(201).json({
+                success: true,
+                message: `Se realizo correctamente el registro`,
+                data: mydata
+            })
+
+        } catch (error) {
+            console.log(`Error: ${error}`);
+            return res.status(501).json({
+                success: false, 
+                message: `Error con el registro`,
+                error: error
+            })
+        }
+    },
+
 
     async login(req, res, next){
         try {

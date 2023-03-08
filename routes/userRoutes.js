@@ -9,7 +9,10 @@ module.exports = (app, upload) => {
     
     app.post('/api/user/login', UserController.login);
 
+    app.post('/api/user/createSecurity', passport.authenticate('jwt', {session: false}), UserController.createSecurity);
+
     app.put('/api/users/update',passport.authenticate('jwt', {session: false}), upload.array('image', 1), UserController.update);
+
     app.put('/api/users/updateWithOut',passport.authenticate('jwt', {session: false}), UserController.updateWithOutImage);
 
 }
