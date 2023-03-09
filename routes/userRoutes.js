@@ -5,7 +5,7 @@ module.exports = (app, upload) => {
 
     app.post('/api/user/create', UserController.create);
 
-    app.post('/api/user/getDataResident',passport.authenticate('jwt', {session: false}),UserController.getDataResident);
+    app.post('/api/user/getDataResident',passport.authenticate('jwt', {session: false}),UserController.getDataResident);//es tipo get
     
     app.post('/api/user/login', UserController.login);
 
@@ -14,6 +14,8 @@ module.exports = (app, upload) => {
     app.put('/api/users/update',passport.authenticate('jwt', {session: false}), upload.array('image', 1), UserController.update);
 
     app.put('/api/users/updateWithOut',passport.authenticate('jwt', {session: false}), UserController.updateWithOutImage);
+
+    app.get('/api/users/getDataUser/:nameRol/:nameResidential',passport.authenticate('jwt', {session: false}), UserController.getDataUser);
 
 }
 

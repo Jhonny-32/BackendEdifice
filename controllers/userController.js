@@ -282,6 +282,21 @@ module.exports = {
         error: error,
         });
       }
+   },
+
+   async getDataUser(req, res, next){
+        try {
+            const nameRol = req.params.nameRol;
+            const nameResidential = req.params.nameResidential;
+            let data = await User.getDataUser(nameRol, nameResidential);
+            return res.status(201).json(data);
+        } catch (error) {
+            return res.status(501).json({
+            success: false,
+            message: 'Error al encontrar la informacion',
+            error: error,
+            });
+        }
    }
 
 }

@@ -165,5 +165,34 @@ User.dataResident = (conjunto) => {
 
 }
 
+User.getDataUser = (nameRol,nameResidential) => {
+
+    const sql = `
+        SELECT  
+	        u.name,
+	        u.lastname,
+	        u.phone,
+	        u.email,
+	        u.dni
+        FROM roles AS r 
+        INNER JOIN user_has_roles AS uhr
+        ON
+	        r.id = uhr.idroles
+        INNER JOIN users AS u 
+        ON 
+	        uhr.iduser = u.id
+        INNER JOIN residential_has_user AS rhu
+        ON 
+	        rhu.iduser = u.id
+        INNER JOIN residential AS res 
+        ON 
+	        res.id = rhu.idresidential 
+        WHERE r.name = $1 AND res.name = $2
+    `;
+
+    return db.manyOrNone(sql, [nameRol, nameResidential]);
+
+}
+
 
 module.exports = User;
