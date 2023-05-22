@@ -50,6 +50,7 @@ User.findByEmail = (email) => {
             U.dni,
             U.password,
             U.session_token,
+            RES.id AS residential,
             RES.name AS conjunto,
             json_agg(
                 json_build_object(
@@ -78,7 +79,7 @@ User.findByEmail = (email) => {
             RES.id = RHU.idresidential
         WHERE 
             email = $1
-        GROUP BY U.id, RES.name;`;
+        GROUP BY U.id, RES.name, RES.id;`;
 
     return db.oneOrNone(sql, email)
 }
@@ -108,9 +109,12 @@ User.update = (user) =>{
         SET 
             name = $2,
             lastname = $3,
-            phone = $4,
-            image = $5,
-            updated_at = $6
+            email = $4,
+            dni = $5,
+            phone = $6,
+            image = $7,
+            password = $8,
+            updated_at = $9
         WHERE
             id = $1
     `;
@@ -118,8 +122,11 @@ User.update = (user) =>{
         user.id,
         user.name,
         user.lastname,
+        user.email,
+        user.dni,
         user.phone,
         user.image,
+        user.password,
         new Date()
     ])
 }
@@ -139,10 +146,15 @@ User.updateSessionToken = (id_user, session_token) => {
 User.dataResident = (conjunto) => {
     
     const sql = `
-         SELECT 
+         SELECT
+            U.id, 
 	        U.name,
 	        U.lastname,
 	        U.phone,
+            U.email,
+            U.dni,
+            U.password,
+            s.id as idset,
 	        s.tower,
 	        s.apartament
         FROM residential as RES
@@ -169,6 +181,7 @@ User.getDataUser = (nameRol,nameResidential) => {
 
     const sql = `
         SELECT  
+            u.id,
 	        u.name,
 	        u.lastname,
 	        u.phone,

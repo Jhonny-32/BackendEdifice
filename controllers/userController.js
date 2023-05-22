@@ -1,11 +1,13 @@
 const User = require('../models/user');
 const Rol = require('../models/rol'); 
+const Set = require('../models/sets');
 const bcrypt = require('bcryptjs');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const keys = require('../config/keys');
 const storage = require('../utils/cloud_storage')
-const Residential = require('../models/residentialS')
+const Residential = require('../models/residentialS');
+const { log } = require('util');
 
 
 module.exports = {
@@ -57,7 +59,7 @@ module.exports = {
               | 3  | VIGILANTE      |
               | 4  | MANAGER        | 
             */
-            const idResidential = req.body.residential;
+            const idResidential = req.body.residentialID;
             const user = req.body; 
             const data = await User.register(user);
 
@@ -103,12 +105,17 @@ module.exports = {
               | 3  | VIGILANTE      |
               | 4  | MANAGER        | 
             */
-            const idResidential = req.body.residential;
-            const user = req.body; 
+           const idResidential = req.body.residential;
+           const tower = req.body.tower;
+           const apartament = req.body.apartament;
+           const user = req.body;
+            console.log(`prueba: ${idResidential}`);
             const data = await User.register(user);
+            const dataSet = await Set.createTA(tower, apartament);
 
             await Rol.create(2,data.id)//Asigancion del rol por ID 
             await Residential.register(idResidential, data.id)
+            await Set.userHasSetsCreate(data.id, dataSet.id)
 
             const token = jwt.sign({ id: data.id, email: user.email }, keys.secretOrKey, {
                     
@@ -172,6 +179,7 @@ module.exports = {
                     email: myUser.email,
                     dni: myUser.dni,
                     password: myUser.password,
+                    residentialID: myUser.residential,
                     session_token: `JWT ${token}`,
                     conjunto: myUser.conjunto,
                     roles: myUser.roles
@@ -297,6 +305,31 @@ module.exports = {
             error: error,
             });
         }
-   }
+   },
+
+   async updateResident(req, res, next) {
+    try {
+      console.log('Usuario', req.body);
+
+      const user = req.body;
+      console.log('Usuario parseado', user);
+
+      await User.update(user);
+      await Set.updateSet(user); //GUARDANDO LA URL EN LA BASE DE DATOS
+
+      return res.status(201).json({
+        success: true,
+        message: 'Los datos del usuario se han actualizado correctamente',
+        data: user,
+      });
+    } catch (error) {
+      console.log(`Error: ${error}`);
+      return res.status(501).json({
+        success: false,
+        message: 'Error al actualizar los datos',
+        error: error,
+      });
+    }
+  },
 
 }
