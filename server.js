@@ -62,7 +62,7 @@ user(app, upload);
 orders(app, upload);
 sets(app);
 
-server.listen(3000, '192.168.0.13' || 'localhost', function(){
+server.listen(3000, process.env.IP || '0.0.0.0', function(){
     console.log('Estamos en el puerto ', port);
 });
 
