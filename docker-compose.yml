@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=EdificeJP
+      - DB_USER=postgres
+      - DB_PASSWORD=angeles-32
+      - NODE_ENV=production
+      - IP=0.0.0.0
+    depends_on:
+      - db
+    # Optional: wait for database to be ready
+    # You might want to add a healthcheck or use a tool like wait-for-it
+    # For now, we'll rely on the app handling connection retries
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=EdificeJP
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=angeles-32
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

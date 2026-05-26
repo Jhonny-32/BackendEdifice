@@ -1,0 +1,335 @@
+const User = require('../models/user');
+const Rol = require('../models/rol'); 
+const Set = require('../models/sets');
+const bcrypt = require('bcryptjs');
+const passport = require('passport');
+const jwt = require('jsonwebtoken');
+const keys = require('../config/keys');
+const storage = require('../utils/cloud_storage')
+const Residential = require('../models/residentialS');
+const { log } = require('util');
+
+
+module.exports = {
+
+    async create(req, res, next){
+        try {
+            
+            const user = req.body; 
+            const data = await User.register(user);
+
+            await Rol.create(1,data.id)//Asigancion del rol por ID 
+
+            const token = jwt.sign({ id: data.id, email: user.email }, keys.secretOrKey, {
+                    
+                })
+
+                const mydata = {
+                    id: data.id,
+                    name: user.name,
+                    lastname: user.lastname,
+                    phone: user.phone,
+                    email: user.email,
+                    dni: user.dni,
+                    session_token: `JWT ${token}`
+                };
+
+            return res.status(201).json({
+                success: true,
+                message: `Se realizo correctamente el registro`,
+                data: mydata
+            })
+
+        } catch (error) {
+            console.log(`Error: ${error}`);
+            return res.status(501).json({
+                success: false, 
+                message: `Error con el registro`,
+                error: error
+            })
+        }
+    },
+
+    async createSecurity(req, res, next){
+        try {
+            /*
+              | id |   rol          |
+              | 1  |  ADMINISTRADOR |
+              | 2  | PROPIETARIO    |
+              | 3  | VIGILANTE      |
+              | 4  | MANAGER        | 
+            */
+            const idResidential = req.body.residentialID;
+            const user = req.body; 
+            const data = await User.register(user);
+
+            await Rol.create(3,data.id)//Asigancion del rol por ID 
+            await Residential.register(idResidential, data.id)
+
+            const token = jwt.sign({ id: data.id, email: user.email }, keys.secretOrKey, {
+                    
+                })
+
+                const mydata = {
+                    id: data.id,
+                    name: user.name,
+                    lastname: user.lastname,
+                    phone: user.phone,
+                    email: user.email,
+                    dni: user.dni,
+                    session_token: `JWT ${token}`
+                };
+
+            return res.status(201).json({
+                success: true,
+                message: `Se realizo correctamente el registro`,
+                data: mydata
+            })
+
+        } catch (error) {
+            console.log(`Error: ${error}`);
+            return res.status(501).json({
+                success: false, 
+                message: `Error con el registro`,
+                error: error
+            })
+        }
+    },
+
+    async createOwner(req, res, next){
+        try {
+            /*
+              | id |   rol          |
+              | 1  |  ADMINISTRADOR |
+              | 2  | PROPIETARIO    |
+              | 3  | VIGILANTE      |
+              | 4  | MANAGER        | 
+            */
+           const idResidential = req.body.residential;
+           const tower = req.body.tower;
+           const apartament = req.body.apartament;
+           const user = req.body;
+            console.log(`prueba: ${idResidential}`);
+            const data = await User.register(user);
+            const dataSet = await Set.createTA(tower, apartament);
+
+            await Rol.create(2,data.id)//Asigancion del rol por ID 
+            await Residential.register(idResidential, data.id)
+            await Set.userHasSetsCreate(data.id, dataSet.id)
+
+            const token = jwt.sign({ id: data.id, email: user.email }, keys.secretOrKey, {
+                    
+                })
+
+                const mydata = {
+                    id: data.id,
+                    name: user.name,
+                    lastname: user.lastname,
+                    phone: user.phone,
+                    email: user.email,
+                    dni: user.dni,
+                    session_token: `JWT ${token}`
+                };
+
+            return res.status(201).json({
+                success: true,
+                message: `Se realizo correctamente el registro`,
+                data: mydata
+            })
+
+        } catch (error) {
+            console.log(`Error: ${error}`);
+            return res.status(501).json({
+                success: false, 
+                message: `Error con el registro`,
+                error: error
+            })
+        }
+    },
+
+
+    async login(req, res, next){
+        try {
+
+            const email = req.body.email;
+            const password = req.body.password;
+
+            const myUser = await User.findByEmail(email);
+
+            if(!myUser){
+                return res.status(401).json({
+                    success: false,
+                    message: 'El email no fue encontrado'
+                })
+            }
+
+            const isPasswordValid = await bcrypt.compare(password, myUser.password); 
+
+            if(isPasswordValid){
+                const token = jwt.sign({ id: myUser.id, email: myUser.email }, keys.secretOrKey, {
+                    
+                })
+
+                const data = {
+                    id: myUser.id,
+                    name: myUser.name,
+                    lastname: myUser.lastname,
+                    phone: myUser.phone,
+                    image: myUser.image,
+                    email: myUser.email,
+                    dni: myUser.dni,
+                    password: myUser.password,
+                    residentialID: myUser.residential,
+                    session_token: `JWT ${token}`,
+                    conjunto: myUser.conjunto,
+                    roles: myUser.roles
+                };
+
+                 await User.updateSessionToken(myUser.id, `JWT ${token}`);
+                console.log(data);
+
+                return res.status(201).json({
+                    success: true, 
+                    message: 'El usuario ha sido autenticado',
+                    data: data
+                })
+            }
+            else{
+                 return res.status(401).json({
+                    success: false, 
+                    message: 'La contraseña es incorrecta',
+                })
+            }
+
+            
+        } catch (error) {
+            console.log(`Error: ${error}`);
+            return res.status(501).json({
+                success: false, 
+                message: `Hubo un error con el login del usuario`,
+                error: error
+            })
+        }
+    },
+
+    async update(req, res, next) {
+    try {
+      console.log('Usuario', req.body.user);
+
+      const user = JSON.parse(req.body.user);
+      console.log('Usuario parseado', user);
+
+      const files = req.files;
+
+      if (files.length > 0) {
+        //EL CLIENTE ENVIA UN ARCHIVO
+
+        const pathImage = `image_${Date.now()}`; //NOMBRE DEL ARCHIVO DE LA IMAGEN
+        const url = await storage(files[0], pathImage);
+
+        if (url != undefined && url != null) {
+          user.image = url;
+        }
+      }
+
+      await User.update(user); //GUARDANDO LA URL EN LA BASE DE DATOS
+
+      return res.status(201).json({
+        success: true,
+        message: 'Los datos del usuario se han actualizado correctamente',
+        data: user,
+      });
+    } catch (error) {
+      console.log(`Error: ${error}`);
+      return res.status(501).json({
+        success: false,
+        message: 'Error al actualizar los datos',
+        error: error,
+      });
+    }
+  },
+
+  
+    async updateWithOutImage(req, res, next) {
+    try {
+      console.log('Usuario', req.body);
+
+      const user = req.body;
+      console.log('Usuario parseado', user);
+
+      await User.update(user); //GUARDANDO LA URL EN LA BASE DE DATOS
+
+      return res.status(201).json({
+        success: true,
+        message: 'Los datos del usuario se han actualizado correctamente',
+        data: user,
+      });
+    } catch (error) {
+      console.log(`Error: ${error}`);
+      return res.status(501).json({
+        success: false,
+        message: 'Error al actualizar los datos',
+        error: error,
+      });
+    }
+  },
+
+   async getDataResident(req, res, next){
+      try {
+        
+        const conjunto = req.body.conjunto;
+        const data = await User.dataResident(conjunto);
+
+        return res.status(201).json(data)
+      
+      } catch (error) {
+        console.log(`Error: ${error}`);
+        return res.status(501).json({
+        success: false,
+        message: 'Error al encontrar la informacion',
+        error: error,
+        });
+      }
+   },
+
+   async getDataUser(req, res, next){
+        try {
+            const nameRol = req.params.nameRol;
+            const nameResidential = req.params.nameResidential;
+            let data = await User.getDataUser(nameRol, nameResidential);
+            return res.status(201).json(data);
+        } catch (error) {
+            return res.status(501).json({
+            success: false,
+            message: 'Error al encontrar la informacion',
+            error: error,
+            });
+        }
+   },
+
+   async updateResident(req, res, next) {
+    try {
+      console.log('Usuario', req.body);
+
+      const user = req.body;
+      console.log('Usuario parseado', user);
+
+      await User.update(user);
+      await Set.updateSet(user); //GUARDANDO LA URL EN LA BASE DE DATOS
+
+      return res.status(201).json({
+        success: true,
+        message: 'Los datos del usuario se han actualizado correctamente',
+        data: user,
+      });
+    } catch (error) {
+      console.log(`Error: ${error}`);
+      return res.status(501).json({
+        success: false,
+        message: 'Error al actualizar los datos',
+        error: error,
+      });
+    }
+  },
+
+}

@@ -1,15 +1,18 @@
-const Residential = require('../models/residential');
+const Residential = require('../models/residentialS');
 
 module.exports = {
 
-    async registerResidential(req, res, next){
+    async register(req, res, next){
         try {
             
-            const residential = req.body;
-            const data = await Residential.registerResidential();
+            const dataR = req.body;
+            const data = await Residential.createResidential(dataR);
             return res.status(201).json({
                 success: true,
-                message: `Se realizo correctamente el registro`
+                message: `Se realizo correctamente el registro`,
+                data: {
+                    'id' : data.id
+                }
             });
 
 
@@ -21,6 +24,28 @@ module.exports = {
                 error: error
             })
         }
+    },
+
+    async dataResidentialUser(req, res, next){
+        try{
+            const idResidential = req.body.id_residential;
+            const idUser = req.body.id_user;
+            
+            await Residential.register(idResidential, idUser);
+
+            return res.status(201).json({
+                success: true,
+                message: 'Los datos fueron guardados correctamente'
+            })
+
+        }catch(error){
+            console.log(`Error: ${error}`);
+            return res.status(501).json({
+                success: false,
+                message: "Error al guardar los datos",
+                error: error
+            })}
     }
+    
 
 }
