@@ -39,10 +39,10 @@ pipeline {
 
     post {
         success {
-            echo '✅ Pipeline completado exitosamente'
+            echo 'Pipeline completado exitosamente'
         }
         failure {
-            echo '❌ Pipeline fallido - revisar los logs'
+            echo 'Pipeline fallido - revisar los logs'
         }
     }
 }
