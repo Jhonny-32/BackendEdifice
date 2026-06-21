@@ -1,0 +1,11 @@
+language: node_js
+node_js:
+  - "20"
+services:
+  - docker
+cache: npm
+install:
+  - npm ci
+script:
+  - npm test
+  - docker build -t backendedifice .
