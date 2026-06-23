@@ -19,7 +19,7 @@ const upload = multer({
 })
 
 /*
-*    RUTAS
+*    RUTAS 
 */
 
 const residential = require('./routes/residentialRoutes')
